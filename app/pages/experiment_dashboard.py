@@ -7,6 +7,7 @@ from app.services.experiment_metrics_service import (
     get_experiment_metrics,
 )
 from app.services.experiment_service import (
+    create_experiment,
     get_experiment_counts,
 )
 from app.services.experiment_schedule_service import (
@@ -64,6 +65,10 @@ record_type = st.selectbox(
 )
 
 try:
+    # Ensure a fresh deployment has the experiment definition.
+    # This does not start the experiment or create assignments.
+    create_experiment()
+
     status = get_experiment_status()
     counts = get_experiment_counts(
         record_type=record_type,
