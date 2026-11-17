@@ -62,7 +62,7 @@ with st.form("parent_intake_form"):
 
     language = st.selectbox(
         "Preferred Language",
-        ["English", "Telugu", "Hindi"],
+        ["English", "Telugu", "Hindi", "Tamil", "Kannada", "Malayalam"],
     )
 
     budget = st.selectbox(
@@ -158,8 +158,6 @@ if submitted:
 
         st.success("Information captured successfully!")
 
-        st.subheader("Your Submitted Preferences")
-        st.json(lead_data)
 
         st.subheader("Your AI Parent Decision Brief")
 
@@ -232,9 +230,13 @@ if (
 
         token = st.session_state["share_token"]
 
+        public_app_url = os.getenv(
+            "PUBLIC_APP_URL",
+            "http://localhost:8501",
+        ).strip().rstrip("/")
+
         share_url = (
-            "http://localhost:8501/shared_brief?token="
-            + token
+            f"{public_app_url}/shared_brief?token={token}"
         )
 
         st.success("Shareable brief created.")
@@ -242,9 +244,9 @@ if (
         st.code(share_url, language=None)
 
         st.caption(
-            "This link works only while the local "
-            "Streamlit server is running. "
-            "Public deployment is not yet configured."
+            "Anyone with this link can access the share-safe "
+            "brief until it expires or is revoked. "
+            "Prototype storage may reset after redeployment."
         )
 
     st.download_button(
