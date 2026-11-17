@@ -1,0 +1,67 @@
+{
+  "program": {
+    "name": "NIAT Upskilling Program",
+    "provider": "NxtWave",
+    "description": "An industry-oriented technology upskilling initiative offered in collaboration with participating universities and colleges.",
+    "disclaimer": "NIAT is not a university or degree-awarding body.",
+    "admission": "Admission to a collaborating university is separate from enrollment in the NIAT upskilling program. Each university applies its own admission policies."
+  },
+  "nat": {
+    "name": "NAT",
+    "duration_minutes": 90,
+    "purpose": "Assess cognitive abilities and suitability for the NIAT upskilling program.",
+    "registration_fee_inr": 1200,
+    "registration_fee_refundable": false,
+    "steps": [
+      "Submit the NAT application and pay the registration fee.",
+      "Take the NAT assessment.",
+      "Attend career counselling if qualified.",
+      "Complete NIAT upskilling enrollment."
+    ],
+    "note": "NAT is not a university entrance examination."
+  },
+  "eligibility": {
+    "twelfth_passout_years": [2023, 2024, 2025, 2026],
+    "subjects": ["Mathematics", "Physics", "Chemistry"],
+    "note": "Eligibility for university admission must be confirmed separately with the university."
+  },
+  "institutions": [
+    {
+      "name": "Chalapathi University",
+      "location": "Guntur, Andhra Pradesh",
+      "collaboration": "Listed on the NIAT website",
+      "hostel": "On-campus accommodation advertised",
+      "transportation": "Available according to the NIAT campus page",
+      "uniform": "Mandatory according to the NIAT campus page",
+      "fees": null,
+      "placement_guarantee": null
+    },
+    {
+      "name": "GMR Institute of Technology",
+      "location": "Vizianagaram, Andhra Pradesh",
+      "collaboration": "Listed on the NIAT website",
+      "fees": null,
+      "placement_guarantee": null
+    },
+    {
+      "name": "Ajeenkya DY Patil University",
+      "location": "Pune, Maharashtra",
+      "collaboration": "Listed on the NIAT website",
+      "fees": null,
+      "placement_guarantee": null
+    }
+  ],
+  "unverified_information": [
+    "Exact annual university tuition fees",
+    "Total NIAT program fees",
+    "Scholarship eligibility and amounts",
+    "University-specific admission requirements",
+    "Guaranteed placements or salary packages",
+    "Complete hostel and transportation charges"
+  ],
+  "source": {
+    "name": "NIAT public website screenshots supplied during the project audit",
+    "website": "https://www.niatindia.com/",
+    "note": "Information reflects the captured website pages and must be revalidated before production use."
+  }
+}
