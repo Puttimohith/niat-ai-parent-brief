@@ -1,5 +1,7 @@
 import os
 from app.services.ai_service import generate_parent_brief
+from app.services.brief_sharing_service import create_shared_brief
+from app.services.brief_experiment_bridge import record_brief_experiment_event
 from app.services.tracking_service import (
     save_lead,
     mark_brief_generated,
@@ -97,6 +99,12 @@ with st.form("parent_intake_form"):
         "to generate a demonstration decision brief."
     )
 
+    sharing_consent = st.checkbox(
+        "I separately agree to create a shareable "
+        "decision brief link. Anyone with the link "
+        "can read the shared brief for up to 7 days."
+    )
+
     submitted = st.form_submit_button(
         "Continue to Decision Brief",
         type="primary",
@@ -127,6 +135,7 @@ if submitted:
         # Clear the previous result before processing new input.
         st.session_state.pop("generated_brief", None)
         st.session_state.pop("lead_id", None)
+        st.session_state.pop("share_token", None)
 
         try:
             record_type = os.getenv(
@@ -164,6 +173,43 @@ if submitted:
                 mark_brief_generated(lead_id)
                 st.session_state["generated_brief"] = brief
 
+                if sharing_consent:
+                    safe_preferences = {
+                        "preferred_state": preferred_state,
+                        "preferred_institution": preferred_institution.strip(),
+                        "language": language,
+                        "annual_budget": budget,
+                        "concerns": concerns,
+                        "additional_questions": "",
+                    }
+
+                    share_safe_brief = generate_parent_brief(
+                        safe_preferences
+                    )
+
+                    if (
+                        not isinstance(share_safe_brief, str)
+                        or not share_safe_brief.strip()
+                    ):
+                        raise ValueError(
+                            "Share-safe brief generation failed"
+                        )
+
+                    token = create_shared_brief(
+                        lead_id,
+                        share_safe_brief,
+                        sharing_consent=True,
+                    )
+
+                    st.session_state["share_token"] = token
+
+                    # Demo handoff event only. This does not
+                    # prove external delivery to a recipient.
+                    record_brief_experiment_event(
+                        lead_id,
+                        "brief_delivered",
+                    )
+
             except Exception as exc:
                 st.error(
                     "Unable to generate the decision brief. "
@@ -179,6 +225,27 @@ if (
 ):
     st.subheader("Your Generated Decision Brief")
     st.markdown(st.session_state["generated_brief"])
+
+    if st.session_state.get("share_token"):
+        st.divider()
+        st.subheader("Shareable Decision Brief")
+
+        token = st.session_state["share_token"]
+
+        share_url = (
+            "http://localhost:8501/shared_brief?token="
+            + token
+        )
+
+        st.success("Shareable brief created.")
+
+        st.code(share_url, language=None)
+
+        st.caption(
+            "This link works only while the local "
+            "Streamlit server is running. "
+            "Public deployment is not yet configured."
+        )
 
     st.download_button(
         "Download Decision Brief",
