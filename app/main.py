@@ -250,9 +250,34 @@ if submitted:
                                     cur.fetchone()
                             st.caption("PostgreSQL connection: PASS")
                         except Exception as db_exc:
+                            error_text = str(db_exc).lower()
+
+                            if "password authentication failed" in error_text:
+                                reason = "AUTHENTICATION_FAILED"
+                            elif "could not translate host name" in error_text:
+                                reason = "DNS_RESOLUTION_FAILED"
+                            elif "name or service not known" in error_text:
+                                reason = "DNS_RESOLUTION_FAILED"
+                            elif "connection timed out" in error_text:
+                                reason = "CONNECTION_TIMEOUT"
+                            elif "timeout expired" in error_text:
+                                reason = "CONNECTION_TIMEOUT"
+                            elif "connection refused" in error_text:
+                                reason = "CONNECTION_REFUSED"
+                            elif "invalid connection" in error_text:
+                                reason = "INVALID_CONNECTION_STRING"
+                            elif "invalid uri" in error_text:
+                                reason = "INVALID_CONNECTION_STRING"
+                            elif "tenant or user not found" in error_text:
+                                reason = "POOLER_USER_NOT_FOUND"
+                            elif "network is unreachable" in error_text:
+                                reason = "NETWORK_UNREACHABLE"
+                            else:
+                                reason = "UNCLASSIFIED"
+
                             st.caption(
                                 "PostgreSQL connection: FAILED | "
-                                f"Error type: {type(db_exc).__name__} | "
+                                f"Reason: {reason} | "
                                 f"SQLSTATE: {getattr(db_exc, 'sqlstate', None)}"
                             )
 
