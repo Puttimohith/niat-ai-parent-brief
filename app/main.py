@@ -232,6 +232,30 @@ if submitted:
                     f"Error type: {type(exc).__name__}"
                 )
 
+                if stage == "create_shared_brief":
+                    from app.services.postgres_config import (
+                        postgres_enabled,
+                        get_postgres_connection,
+                    )
+
+                    st.caption(
+                        f"PostgreSQL configured: {postgres_enabled()}"
+                    )
+
+                    if postgres_enabled():
+                        try:
+                            with get_postgres_connection() as conn:
+                                with conn.cursor() as cur:
+                                    cur.execute("SELECT 1")
+                                    cur.fetchone()
+                            st.caption("PostgreSQL connection: PASS")
+                        except Exception as db_exc:
+                            st.caption(
+                                "PostgreSQL connection: FAILED | "
+                                f"Error type: {type(db_exc).__name__} | "
+                                f"SQLSTATE: {getattr(db_exc, 'sqlstate', None)}"
+                            )
+
 if (
     st.session_state.get("generated_brief")
     and st.session_state.get("lead_id")
