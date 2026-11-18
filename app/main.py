@@ -171,12 +171,14 @@ if submitted:
         st.subheader("Your AI Parent Decision Brief")
 
         with st.spinner("Generating your personalised decision brief..."):
+            stage = "generate_personal_brief"
             try:
                 brief = generate_parent_brief(lead_data)
 
                 if not isinstance(brief, str) or not brief.strip():
                     raise ValueError("AI returned an empty decision brief.")
 
+                stage = "mark_brief_generated"
                 mark_brief_generated(lead_id)
                 st.session_state["generated_brief"] = brief
 
@@ -190,6 +192,7 @@ if submitted:
                         "additional_questions": "",
                     }
 
+                    stage = "generate_share_safe_brief"
                     share_safe_brief = generate_parent_brief(
                         safe_preferences
                     )
@@ -202,6 +205,7 @@ if submitted:
                             "Share-safe brief generation failed"
                         )
 
+                    stage = "create_shared_brief"
                     token = create_shared_brief(
                         lead_id,
                         share_safe_brief,
@@ -212,6 +216,7 @@ if submitted:
 
                     # Demo handoff event only. This does not
                     # prove external delivery to a recipient.
+                    stage = "record_experiment_event"
                     record_brief_experiment_event(
                         lead_id,
                         "brief_delivered",
@@ -223,6 +228,7 @@ if submitted:
                     "Please try again."
                 )
                 st.caption(
+                    f"Failed stage: {stage} | "
                     f"Error type: {type(exc).__name__}"
                 )
 
