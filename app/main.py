@@ -8,6 +8,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import os
 from app.services.ai_service import generate_parent_brief
+from app.services.ai_tool_agent import ask_niat_agent
 from app.services.brief_sharing_service import create_shared_brief
 from app.services.brief_experiment_bridge import record_brief_experiment_event
 from app.services.tracking_service import (
@@ -296,3 +297,105 @@ if (
             )
         except Exception:
             st.error("Unable to record your request. Please retry.")
+
+
+# ===== OPTIONAL GEMINI TOOL-CALLING AGENT =====
+
+st.divider()
+st.subheader("Ask the NIAT AI Research Agent")
+
+st.caption(
+    "Optional AI-powered research using public NIAT "
+    "information. This independent prototype is not "
+    "an official NIAT counselling service."
+)
+
+with st.form("niat_agent_question_form"):
+    agent_question = st.text_area(
+        "Ask a question about NIAT",
+        placeholder=(
+            "Example: What should parents verify "
+            "about fees and university admission?"
+        ),
+        max_chars=1200,
+    )
+
+    agent_language = st.selectbox(
+        "Answer language",
+        [
+            "English",
+            "Telugu",
+            "Hindi",
+            "Tamil",
+            "Kannada",
+            "Malayalam",
+        ],
+        key="agent_language",
+    )
+
+    agent_submitted = st.form_submit_button(
+        "Ask AI Research Agent"
+    )
+
+if agent_submitted:
+    if not agent_question.strip():
+        st.warning("Please enter a question.")
+    else:
+        with st.spinner(
+            "Researching public sources with Gemini..."
+        ):
+            try:
+                agent_result = ask_niat_agent(
+                    agent_question.strip(),
+                    language=agent_language,
+                )
+
+                st.session_state["agent_result"] = (
+                    agent_result
+                )
+            except Exception as exc:
+                st.session_state.pop(
+                    "agent_result", None
+                )
+                st.error(
+                    "The research agent could not "
+                    "complete this request."
+                )
+                st.caption(
+                    f"Error type: {type(exc).__name__}"
+                )
+
+agent_result = st.session_state.get("agent_result")
+
+if agent_result:
+    st.markdown("### AI Research Answer")
+    st.markdown(agent_result["answer"])
+
+    if agent_result["used_public_tool"]:
+        st.success(
+            "Gemini executed the public-source "
+            "retrieval tool."
+        )
+
+        with st.expander(
+            "View actual tool-call evidence"
+        ):
+            for call in agent_result["tool_calls"]:
+                st.write(
+                    "Topic:", call["topic"]
+                )
+                st.write(
+                    "Source:", call["source_url"]
+                )
+                st.write(
+                    "Passages:", call["passage_count"]
+                )
+                st.write(
+                    "Retrieved:", call["retrieved_at"]
+                )
+    else:
+        st.warning(
+            "Gemini answered without calling the "
+            "public-source tool. This response does "
+            "not demonstrate tool calling."
+        )
