@@ -4,3 +4,4 @@ python-dotenv
 pydantic
 pandas
 pytest
+psycopg[binary]==3.3.9

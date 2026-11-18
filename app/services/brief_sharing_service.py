@@ -135,3 +135,78 @@ def revoke_shared_brief(lead_id):
         """, (lead_id,))
 
     return cursor.rowcount > 0
+
+
+# PostgreSQL backend routing
+# Preserve the existing SQLite implementation for local development.
+
+_sqlite_initialize = initialize_sharing_database
+_sqlite_create = create_shared_brief
+_sqlite_get = get_shared_brief
+_sqlite_revoke = revoke_shared_brief
+
+
+def initialize_sharing_database():
+    from app.services.postgres_config import postgres_enabled
+
+    if postgres_enabled():
+        from app.services.postgres_sharing_service import (
+            initialize_postgres_sharing,
+        )
+        return initialize_postgres_sharing()
+
+    return _sqlite_initialize()
+
+
+def create_shared_brief(
+    lead_id,
+    brief_content,
+    sharing_consent=False,
+    expires_in_days=7,
+):
+    from app.services.postgres_config import postgres_enabled
+
+    if postgres_enabled():
+        from app.services.postgres_sharing_service import (
+            create_postgres_shared_brief,
+        )
+        return create_postgres_shared_brief(
+            lead_id,
+            brief_content,
+            sharing_consent=sharing_consent,
+            expires_in_days=expires_in_days,
+        )
+
+    return _sqlite_create(
+        lead_id,
+        brief_content,
+        sharing_consent=sharing_consent,
+        expires_in_days=expires_in_days,
+    )
+
+
+def get_shared_brief(token, count_view=False):
+    from app.services.postgres_config import postgres_enabled
+
+    if postgres_enabled():
+        from app.services.postgres_sharing_service import (
+            get_postgres_shared_brief,
+        )
+        return get_postgres_shared_brief(
+            token,
+            count_view=count_view,
+        )
+
+    return _sqlite_get(token, count_view=count_view)
+
+
+def revoke_shared_brief(lead_id):
+    from app.services.postgres_config import postgres_enabled
+
+    if postgres_enabled():
+        from app.services.postgres_sharing_service import (
+            revoke_postgres_shared_brief,
+        )
+        return revoke_postgres_shared_brief(lead_id)
+
+    return _sqlite_revoke(lead_id)
