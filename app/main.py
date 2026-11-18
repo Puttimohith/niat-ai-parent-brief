@@ -223,63 +223,18 @@ if submitted:
                     )
 
             except Exception as exc:
+                import logging
+
+                logging.getLogger(__name__).error(
+                    "Brief workflow failed at stage %s (%s)",
+                    stage,
+                    type(exc).__name__,
+                )
+
                 st.error(
-                    "Unable to generate the decision brief. "
+                    "Unable to complete the decision brief workflow. "
                     "Please try again."
                 )
-                st.caption(
-                    f"Failed stage: {stage} | "
-                    f"Error type: {type(exc).__name__}"
-                )
-
-                if stage == "create_shared_brief":
-                    from app.services.postgres_config import (
-                        postgres_enabled,
-                        get_postgres_connection,
-                    )
-
-                    st.caption(
-                        f"PostgreSQL configured: {postgres_enabled()}"
-                    )
-
-                    if postgres_enabled():
-                        try:
-                            with get_postgres_connection() as conn:
-                                with conn.cursor() as cur:
-                                    cur.execute("SELECT 1")
-                                    cur.fetchone()
-                            st.caption("PostgreSQL connection: PASS")
-                        except Exception as db_exc:
-                            error_text = str(db_exc).lower()
-
-                            if "password authentication failed" in error_text:
-                                reason = "AUTHENTICATION_FAILED"
-                            elif "could not translate host name" in error_text:
-                                reason = "DNS_RESOLUTION_FAILED"
-                            elif "name or service not known" in error_text:
-                                reason = "DNS_RESOLUTION_FAILED"
-                            elif "connection timed out" in error_text:
-                                reason = "CONNECTION_TIMEOUT"
-                            elif "timeout expired" in error_text:
-                                reason = "CONNECTION_TIMEOUT"
-                            elif "connection refused" in error_text:
-                                reason = "CONNECTION_REFUSED"
-                            elif "invalid connection" in error_text:
-                                reason = "INVALID_CONNECTION_STRING"
-                            elif "invalid uri" in error_text:
-                                reason = "INVALID_CONNECTION_STRING"
-                            elif "tenant or user not found" in error_text:
-                                reason = "POOLER_USER_NOT_FOUND"
-                            elif "network is unreachable" in error_text:
-                                reason = "NETWORK_UNREACHABLE"
-                            else:
-                                reason = "UNCLASSIFIED"
-
-                            st.caption(
-                                "PostgreSQL connection: FAILED | "
-                                f"Reason: {reason} | "
-                                f"SQLSTATE: {getattr(db_exc, 'sqlstate', None)}"
-                            )
 
 if (
     st.session_state.get("generated_brief")
